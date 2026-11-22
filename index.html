@@ -1,0 +1,578 @@
+ <!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Energy Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen">
+
+<!-- ECRAN 1: SELECTARE CASĂ -->
+<div id="view-house-selector" class="flex flex-col items-center justify-center min-h-screen p-6">
+    <div class="text-center mb-10">
+        <div class="inline-flex p-4 bg-emerald-500/10 rounded-2xl text-emerald-400 mb-4 text-3xl">
+            <i class="fa-solid fa-house-signal"></i>
+        </div>
+        <h1 class="text-3xl font-bold text-white mb-2">Platformă Smart Energy</h1>
+        <p class="text-slate-400">Alege gospodăria pe care dorești să o gestionezi azi</p>
+
+        <button onclick="openModal('modal-add-house')"
+                class="mt-6 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-5 py-3 rounded-xl text-sm inline-flex items-center space-x-2 transition shadow-lg">
+            <i class="fa-solid fa-plus"></i>
+            <span>Adaugă Gospodărie Nouă</span>
+        </button>
+    </div>
+
+    <div id="lista-gospodarii" class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-3xl"></div>
+</div>
+
+<!-- ECRAN 2: PANOUL PRINCIPAL -->
+<div id="view-dashboard" class="hidden min-h-screen flex flex-col md:flex-row">
+
+    <!-- SIDEBAR -->
+    <aside class="w-full md:w-64 bg-slate-800 border-r border-slate-700/60 p-5 flex flex-col justify-between">
+        <div>
+            <div class="flex items-center justify-between mb-8 pb-4 border-b border-slate-700/60">
+                <div class="flex items-center space-x-3">
+                    <div class="p-2 bg-emerald-500 rounded-xl text-slate-900 font-bold">
+                        <i class="fa-solid fa-bolt"></i>
+                    </div>
+                    <span class="font-bold text-lg text-white">SmartEnergy</span>
+                </div>
+            </div>
+
+            <nav class="space-y-2">
+                <a href="#"
+                   class="flex items-center space-x-3 bg-emerald-500/10 text-emerald-400 p-3 rounded-xl font-medium">
+                    <i class="fa-solid fa-chart-pie w-5"></i>
+                    <span>Prezentare Generală</span>
+                </a>
+                <a href="#" onclick="openModal('modal-add-device')"
+                   class="flex items-center space-x-3 text-slate-400 hover:bg-slate-700/50 hover:text-white p-3 rounded-xl font-medium transition">
+                    <i class="fa-solid fa-plug w-5"></i>
+                    <span>Adaugă Dispozitiv</span>
+                </a>
+                <a href="#" onclick="openModal('modal-add-energy')"
+                   class="flex items-center space-x-3 text-slate-400 hover:bg-slate-700/50 hover:text-white p-3 rounded-xl font-medium transition">
+                    <i class="fa-solid fa-solar-panel w-5"></i>
+                    <span>Adaugă Sursă Energie</span>
+                </a>
+                <a href="#" onclick="openModal('modal-add-invoice')"
+                   class="flex items-center space-x-3 text-slate-400 hover:bg-slate-700/50 hover:text-white p-3 rounded-xl font-medium transition">
+                    <i class="fa-solid fa-file-invoice-dollar w-5"></i>
+                    <span>Adaugă Factură</span>
+                </a>
+            </nav>
+        </div>
+
+        <button onclick="backToHouseSelector()"
+                class="mt-8 flex items-center justify-center space-x-2 text-slate-400 hover:text-white bg-slate-900/60 p-3 rounded-xl text-sm border border-slate-700/50 hover:border-slate-600 transition">
+            <i class="fa-solid fa-arrow-left"></i>
+            <span>Schimbă Gospodăria</span>
+        </button>
+    </aside>
+
+    <!-- CONȚINUT PRINCIPAL -->
+    <main class="flex-1 p-6 md:p-10 space-y-8 overflow-y-auto">
+
+        <!-- TOP BAR -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+                <h1 id="active-house-title" class="text-2xl font-bold text-white">Casa Principală</h1>
+                <p id="active-house-sub" class="text-slate-400 text-sm">Monitorizare în timp real</p>
+            </div>
+            <div class="flex flex-wrap gap-3">
+                <button onclick="openModal('modal-add-device')"
+                        class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-4 py-2.5 rounded-xl text-sm flex items-center space-x-2 transition">
+                    <i class="fa-solid fa-plug"></i>
+                    <span>Dispozitiv Nou</span>
+                </button>
+                <button onclick="openModal('modal-add-energy')"
+                        class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-bold px-4 py-2.5 rounded-xl text-sm flex items-center space-x-2 transition">
+                    <i class="fa-solid fa-solar-panel text-amber-400"></i>
+                    <span>Sursă Nouă</span>
+                </button>
+                <button onclick="openModal('modal-add-invoice')"
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2.5 rounded-xl text-sm flex items-center space-x-2 transition">
+                    <i class="fa-solid fa-file-invoice-dollar"></i>
+                    <span>Factură Nouă</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- VREME LIVE & STATISTICI -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700/60 p-6 rounded-2xl">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-slate-400 text-sm font-medium">Vremea Live (Open-Meteo)</span>
+                    <i class="fa-solid fa-cloud-sun text-amber-400 text-2xl"></i>
+                </div>
+                <div id="w-temp" class="text-3xl font-bold text-white">-- °C</div>
+                <p id="w-desc" class="text-xs text-emerald-400 mt-2 font-semibold">Se încarcă...</p>
+            </div>
+
+            <div class="bg-slate-800 border border-slate-700/60 p-6 rounded-2xl">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-slate-400 text-sm font-medium">Consum Mediu Lunar</span>
+                    <i class="fa-solid fa-bolt text-blue-400 text-xl"></i>
+                </div>
+                <div id="stat-medie-kwh" class="text-3xl font-bold text-white">-- kWh</div>
+                <p class="text-xs text-slate-400 mt-2">Din facturile salvate</p>
+            </div>
+
+            <div class="bg-slate-800 border border-slate-700/60 p-6 rounded-2xl">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-slate-400 text-sm font-medium">Preț Mediu / kWh</span>
+                    <i class="fa-solid fa-coins text-amber-400 text-xl"></i>
+                </div>
+                <div id="stat-medie-pret" class="text-3xl font-bold text-amber-400">-- RON</div>
+                <p class="text-xs text-slate-400 mt-2">Tarif mediu rețea</p>
+            </div>
+        </div>
+
+        <!-- DISPOZITIVE & SURSE ALE GOSPODĂRIEI -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Card Dispozitive -->
+            <div class="bg-slate-800 border border-slate-700/60 p-6 rounded-2xl space-y-4">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-plug text-blue-400 mr-2"></i>Dispozitive
+                        Conectate</h3>
+                    <button onclick="openModal('modal-add-device')" class="text-xs text-emerald-400 hover:underline">+
+                        Adaugă
+                    </button>
+                </div>
+                <div id="lista-dispozitive-casa" class="space-y-2"></div>
+            </div>
+
+            <!-- Card Surse Energie -->
+            <div class="bg-slate-800 border border-slate-700/60 p-6 rounded-2xl space-y-4">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-solar-panel text-amber-400 mr-2"></i>Surse
+                        de Energie</h3>
+                    <button onclick="openModal('modal-add-energy')" class="text-xs text-emerald-400 hover:underline">+
+                        Adaugă
+                    </button>
+                </div>
+                <div id="lista-surse-casa" class="space-y-2"></div>
+            </div>
+        </div>
+
+        <!-- RECOMANDARE AI -->
+        <div class="bg-gradient-to-r from-emerald-950/60 to-slate-800 border border-emerald-500/30 p-6 rounded-2xl">
+            <div class="flex items-center space-x-3 mb-4">
+                <div class="p-2 bg-emerald-500/20 text-emerald-400 rounded-lg">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                </div>
+                <h2 class="text-lg font-bold text-white">Recomandare AI (Optimizată pe Vremea din Locație)</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Alege aparatul de pornit:</label>
+                    <select id="aparat-select"
+                            class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl p-3 text-sm focus:border-emerald-500 outline-none">
+                        <option value="mașină de spălat">Mașină de spălat rufe</option>
+                        <option value="cuptor">Cuptor Electric</option>
+                        <option value="uscător de haine">Uscător de haine</option>
+                        <option value="încărcător ev">Încărcător Mașină Electrică</option>
+                        <option value="aspirator">Aspirator</option>
+                    </select>
+                </div>
+                <div>
+                    <button onclick="calculeazaRecomandare()"
+                            class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold p-3 rounded-xl text-sm transition">
+                        Calculează Interval Optim
+                    </button>
+                </div>
+            </div>
+
+            <div id="box-rezultat"
+                 class="hidden mt-6 p-4 bg-slate-900/80 border border-slate-700 rounded-xl text-sm space-y-2">
+                <div class="flex justify-between items-center">
+                    <span id="rec-aparat" class="font-bold text-white text-base"></span>
+                    <span id="rec-procent"
+                          class="bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full text-xs font-semibold"></span>
+                </div>
+                <p id="rec-interval" class="text-amber-400 font-semibold"></p>
+                <p id="rec-sfat" class="text-slate-300 italic"></p>
+            </div>
+        </div>
+
+        <!-- SECȚIUNE ISTORIC FACTURI -->
+        <div class="bg-slate-800 border border-slate-700/60 p-6 rounded-2xl">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-bold text-white">Istoric Facturi & Costuri</h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-300">
+                    <thead class="text-xs text-slate-400 uppercase bg-slate-900/50">
+                    <tr>
+                        <th class="p-3 rounded-l-xl">Luna Facturată</th>
+                        <th class="p-3">Consum (kWh)</th>
+                        <th class="p-3">Total De Plată</th>
+                        <th class="p-3 rounded-r-xl">Cost mediu/kWh</th>
+                    </tr>
+                    </thead>
+                    <tbody id="tabel-facturi"></tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<!-- MODAL: ADAUGĂ GOSPODĂRIE NOUĂ -->
+<div id="modal-add-house"
+     class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div class="bg-slate-800 border border-slate-700 w-full max-w-md rounded-2xl p-6 space-y-4">
+        <div class="flex justify-between items-center">
+            <h3 class="text-lg font-bold text-white">Adaugă Gospodărie Nouă</h3>
+            <button onclick="closeModal('modal-add-house')" class="text-slate-400 hover:text-white"><i
+                    class="fa-solid fa-xmark text-xl"></i></button>
+        </div>
+        <form onsubmit="salveazaGospodarie(event)" class="space-y-4">
+            <div>
+                <label class="block text-xs text-slate-400 mb-1">Nume Gospodărie</label>
+                <input type="text" id="house-nume" placeholder="ex: Casa de la Munte" required
+                       class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white outline-none">
+            </div>
+            <div>
+                <label class="block text-xs text-slate-400 mb-1">Oraș / Adresă</label>
+                <input type="text" id="house-adresa" placeholder="ex: Timișoara, Brașov" required
+                       class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white outline-none">
+            </div>
+            <div>
+                <label class="block text-xs text-slate-400 mb-1">Putere Panouri Solare (kWp)</label>
+                <input type="number" step="0.1" id="house-kw" placeholder="ex: 6.0" required
+                       class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white outline-none">
+            </div>
+            <button type="submit"
+                    class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold p-3 rounded-xl text-sm transition">
+                Salvează Gospodăria
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL: ADAUGĂ DISPOZITIV NOU -->
+<div id="modal-add-device"
+     class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div class="bg-slate-800 border border-slate-700 w-full max-w-md rounded-2xl p-6 space-y-4">
+        <div class="flex justify-between items-center">
+            <h3 class="text-lg font-bold text-white">Adaugă Dispozitiv Nou</h3>
+            <button onclick="closeModal('modal-add-device')" class="text-slate-400 hover:text-white"><i
+                    class="fa-solid fa-xmark text-xl"></i></button>
+        </div>
+        <form onsubmit="salveazaDispozitiv(event)" class="space-y-4">
+            <div>
+                <label class="block text-xs text-slate-400 mb-1">Nume Dispozitiv</label>
+                <input type="text" id="dev-nume" placeholder="ex: Pompă de căldură / TV / Frigider" required
+                       class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white outline-none">
+            </div>
+            <div>
+                <label class="block text-xs text-slate-400 mb-1">Putere Estimată (Wați)</label>
+                <input type="number" id="dev-putere" placeholder="ex: 1800" required
+                       class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white outline-none">
+            </div>
+            <button type="submit"
+                    class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold p-3 rounded-xl text-sm">
+                Adaugă Dispozitivul
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL: ADAUGĂ SURSĂ DE ENERGIE -->
+<div id="modal-add-energy"
+     class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div class="bg-slate-800 border border-slate-700 w-full max-w-md rounded-2xl p-6 space-y-4">
+        <div class="flex justify-between items-center">
+            <h3 class="text-lg font-bold text-white">Adaugă Sursă de Energie</h3>
+            <button onclick="closeModal('modal-add-energy')" class="text-slate-400 hover:text-white"><i
+                    class="fa-solid fa-xmark text-xl"></i></button>
+        </div>
+        <form onsubmit="salveazaSursa(event)" class="space-y-4">
+            <div>
+                <label class="block text-xs text-slate-400 mb-1">Tip Sursă</label>
+                <select id="src-tip"
+                        class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white outline-none">
+                    <option value="Panouri Solare (Fotovoltaic)">Panouri Solare (Fotovoltaic)</option>
+                    <option value="Baterie de Stocare">Baterie de Stocare</option>
+                    <option value="Turbină Eoliană Mică">Turbină Eoliană Mică</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs text-slate-400 mb-1">Capacitate (kW sau kWh)</label>
+                <input type="number" step="0.1" id="src-kw" placeholder="ex: 4.5" required
+                       class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white outline-none">
+            </div>
+            <button type="submit"
+                    class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold p-3 rounded-xl text-sm">
+                Adaugă Sursa
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL FACTURĂ -->
+<div id="modal-add-invoice"
+     class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div class="bg-slate-800 border border-slate-700 w-full max-w-md rounded-2xl p-6 space-y-4">
+        <div class="flex justify-between items-center">
+            <h3 class="text-lg font-bold text-white">Adaugă Factură Anterioară</h3>
+            <button onclick="closeModal('modal-add-invoice')" class="text-slate-400 hover:text-white"><i
+                    class="fa-solid fa-xmark text-xl"></i></button>
+        </div>
+        <form onsubmit="salveazaFactura(event)" class="space-y-4">
+            <div>
+                <label class="block text-xs text-slate-400 mb-1">Luna și Anul</label>
+                <input type="text" id="inv-luna" placeholder="ex: Noiembrie 2026" required
+                       class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white outline-none">
+            </div>
+            <div>
+                <label class="block text-xs text-slate-400 mb-1">Consum Facturat (kWh)</label>
+                <input type="number" step="0.1" id="inv-kwh" placeholder="ex: 250" required
+                       class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white outline-none">
+            </div>
+            <div>
+                <label class="block text-xs text-slate-400 mb-1">Valoare Totală (RON)</label>
+                <input type="number" step="0.01" id="inv-cost" placeholder="ex: 200.50" required
+                       class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white outline-none">
+            </div>
+            <button type="submit"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold p-3 rounded-xl text-sm transition">
+                Salvează Factura
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- JAVASCRIPT LOGIC -->
+<script>
+    let currentHouse = null;
+
+    async function incarcaGospodarii() {
+        let res = await fetch('/api/gospodarii');
+        let lista = await res.json();
+
+        let div = document.getElementById('lista-gospodarii');
+        div.innerHTML = '';
+        lista.forEach(g => {
+            div.innerHTML += `
+            <div onclick="selectHouse('${g.id}')"
+                 class="relative bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 hover:border-emerald-500 p-6 rounded-2xl cursor-pointer transition shadow-xl group">
+
+                <!-- BUTON ȘTERGERE -->
+                <button onclick="stergeGospodarie(event, '${g.id}')"
+                        class="absolute top-4 right-4 text-slate-500 hover:text-red-400 p-2 rounded-lg transition"
+                        title="Șterge gospodăria">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+
+                <div class="flex items-center justify-between mb-4 pr-8">
+                    <div class="p-3 bg-emerald-500/20 text-emerald-400 rounded-xl group-hover:bg-emerald-500 group-hover:text-white transition">
+                        <i class="fa-solid fa-house text-xl"></i>
+                    </div>
+                    <span class="text-xs bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full font-semibold">Online</span>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-1">${g.nume}</h3>
+                <p class="text-slate-400 text-sm mb-4">📍 ${g.adresa} • Sistem ${g.capacitate_kw} kWp</p>
+                <div class="flex justify-between items-center text-xs text-slate-400 pt-4 border-t border-slate-700/50">
+                    <span><i class="fa-solid fa-solar-panel text-amber-400 mr-1"></i> ${g.panouri} Panouri</span>
+                    <span><i class="fa-solid fa-plug text-blue-400 mr-1"></i> ${g.dispozitive ? g.dispozitive.length : 0} Dispozitive</span>
+                </div>
+            </div>
+        `;
+        });
+    }
+
+    async function stergeGospodarie(e, houseId) {
+        e.stopPropagation(); // Oprește deschiderea dashboard-ului când apeși pe coșul de gunoi
+        if (!confirm("Ești sigur că vrei să ștergi această gospodărie?")) return;
+
+        await fetch('/api/gospodarii/' + houseId, {method: 'DELETE'});
+        incarcaGospodarii();
+    }
+
+    async function selectHouse(houseId) {
+        let res = await fetch('/api/gospodarii');
+        let lista = await res.json();
+        currentHouse = lista.find(h => h.id === houseId);
+
+        if (!currentHouse) return;
+
+        document.getElementById('view-house-selector').classList.add('hidden');
+        document.getElementById('view-dashboard').classList.remove('hidden');
+        document.getElementById('active-house-title').innerText = currentHouse.nume;
+        document.getElementById('active-house-sub').innerText = currentHouse.adresa + ' • ' + currentHouse.capacitate_kw + ' kWp Panouri';
+
+        incarcaVremeaLive(currentHouse.adresa, currentHouse.capacitate_kw);
+        afiseazaDispozitiveSiSurse();
+        incarcaFacturi();
+    }
+
+    function afiseazaDispozitiveSiSurse() {
+        if (!currentHouse) return;
+
+        let divDisp = document.getElementById('lista-dispozitive-casa');
+        divDisp.innerHTML = '';
+        if (!currentHouse.dispozitive || currentHouse.dispozitive.length === 0) {
+            divDisp.innerHTML = '<p class="text-slate-500 text-sm">Niciun dispozitiv adăugat încă.</p>';
+        } else {
+            currentHouse.dispozitive.forEach(d => {
+                divDisp.innerHTML += `
+                        <div class="flex justify-between items-center bg-slate-900/60 p-3 rounded-xl border border-slate-700/40">
+                            <span class="font-medium text-white text-sm"><i class="fa-solid fa-plug text-blue-400 mr-2"></i>${d.nume}</span>
+                            <span class="text-xs text-slate-400 font-bold bg-slate-800 px-2 py-1 rounded">${d.putere_w} W</span>
+                        </div>
+                    `;
+            });
+        }
+
+        let divSurse = document.getElementById('lista-surse-casa');
+        divSurse.innerHTML = '';
+        if (!currentHouse.surse || currentHouse.surse.length === 0) {
+            divSurse.innerHTML = '<p class="text-slate-500 text-sm">Nicio sursă de energie adăugată încă.</p>';
+        } else {
+            currentHouse.surse.forEach(s => {
+                divSurse.innerHTML += `
+                        <div class="flex justify-between items-center bg-slate-900/60 p-3 rounded-xl border border-slate-700/40">
+                            <span class="font-medium text-white text-sm"><i class="fa-solid fa-sun text-amber-400 mr-2"></i>${s.tip}</span>
+                            <span class="text-xs text-emerald-400 font-bold bg-emerald-500/10 px-2 py-1 rounded">${s.capacitate_kw} kW</span>
+                        </div>
+                    `;
+            });
+        }
+    }
+
+    async function incarcaVremeaLive(adresa, kw) {
+        let res = await fetch(`/api/vremea?oras=${encodeURIComponent(adresa)}&capacitate_kw=${kw}`);
+        let data = await res.json();
+
+        document.getElementById('w-temp').innerText = data.temperatura + ' °C';
+        document.getElementById('w-desc').innerText = data.stare_vreme + ' (' + data.nori_procente + '% Nori)';
+    }
+
+    function backToHouseSelector() {
+        document.getElementById('view-dashboard').classList.add('hidden');
+        document.getElementById('view-house-selector').classList.remove('hidden');
+        incarcaGospodarii();
+    }
+
+    function openModal(id) {
+        document.getElementById(id).classList.remove('hidden');
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).classList.add('hidden');
+    }
+
+    async function calculeazaRecomandare() {
+        if (!currentHouse) return;
+        let aparat = document.getElementById('aparat-select').value;
+        let res = await fetch(`/recomandare?aparat=${encodeURIComponent(aparat)}&oras=${encodeURIComponent(currentHouse.adresa)}&capacitate_kw=${currentHouse.capacitate_kw}`);
+        let data = await res.json();
+
+        let box = document.getElementById('box-rezultat');
+        box.classList.remove('hidden');
+        document.getElementById('rec-aparat').innerText = data.aparat;
+        document.getElementById('rec-procent').innerText = data.acoperire_solara_procente + '% Solar';
+        document.getElementById('rec-interval').innerText = '⏱️ Interval Optim: ' + data.fereastra_optima;
+        document.getElementById('rec-sfat').innerText = data.sfat;
+    }
+
+    async function salveazaGospodarie(e) {
+        e.preventDefault();
+        let nume = document.getElementById('house-nume').value;
+        let adresa = document.getElementById('house-adresa').value;
+        let kw = parseFloat(document.getElementById('house-kw').value);
+
+        await fetch('/api/gospodarii', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({nume, adresa, capacitate_kw: kw})
+        });
+
+        closeModal('modal-add-house');
+        incarcaGospodarii();
+    }
+
+    async function salveazaDispozitiv(e) {
+        e.preventDefault();
+        if (!currentHouse) return;
+        let nume = document.getElementById('dev-nume').value;
+        let putere = parseFloat(document.getElementById('dev-putere').value);
+
+        let res = await fetch(`/api/gospodarii/${currentHouse.id}/dispozitive`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({nume: nume, putere_w: putere})
+        });
+
+        currentHouse = await res.json();
+        closeModal('modal-add-device');
+        afiseazaDispozitiveSiSurse();
+    }
+
+    async function salveazaSursa(e) {
+        e.preventDefault();
+        if (!currentHouse) return;
+        let tip = document.getElementById('src-tip').value;
+        let kw = parseFloat(document.getElementById('src-kw').value);
+
+        let res = await fetch(`/api/gospodarii/${currentHouse.id}/surse`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({tip: tip, capacitate_kw: kw})
+        });
+
+        currentHouse = await res.json();
+        closeModal('modal-add-energy');
+        afiseazaDispozitiveSiSurse();
+    }
+
+    async function incarcaFacturi() {
+        let res = await fetch('/api/facturi');
+        let data = await res.json();
+
+        document.getElementById('stat-medie-kwh').innerText = data.medie_kwh + ' kWh';
+        document.getElementById('stat-medie-pret').innerText = data.medie_pret_kwh + ' RON';
+
+        let tbody = document.getElementById('tabel-facturi');
+        tbody.innerHTML = '';
+        data.facturi.forEach(f => {
+            let pretKwh = (f.cost_ron / f.kwh).toFixed(2);
+            tbody.innerHTML += `
+                    <tr class="border-b border-slate-700/40 hover:bg-slate-700/20">
+                        <td class="p-3 font-medium text-white">${f.luna}</td>
+                        <td class="p-3">${f.kwh} kWh</td>
+                        <td class="p-3 text-emerald-400 font-semibold">${f.cost_ron} RON</td>
+                        <td class="p-3 text-slate-400">${pretKwh} RON / kWh</td>
+                    </tr>
+                `;
+        });
+    }
+
+    async function salveazaFactura(e) {
+        e.preventDefault();
+        let luna = document.getElementById('inv-luna').value;
+        let kwh = parseFloat(document.getElementById('inv-kwh').value);
+        let cost = parseFloat(document.getElementById('inv-cost').value);
+
+        await fetch('/api/facturi', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({luna: luna, kwh: kwh, cost_ron: cost})
+        });
+
+        closeModal('modal-add-invoice');
+        incarcaFacturi();
+    }
+
+    // Inițializare
+    incarcaGospodarii();
+</script>
+</body>
+</html>
